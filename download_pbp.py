@@ -6,12 +6,12 @@ BASE_URL = "https://github.com/nflverse/nflverse-data/releases/download/pbp"
 DIRECTORY = "nfl_pbp_csvs"
 
 #download play_by_play CSV files from the nflfastr repository from 1999 to 2024
-def download_pbp_csvs(base_url, directory, start_year=2016, end_year=2023):
+def download_pbp_csvs(base_url, directory, start_year=2016, end_year=2024):
     os.makedirs(directory, exist_ok=True) # creates directory if it doesn't exists
 
     for year in range(start_year, end_year + 1):
-        #filename = f"play_by_play_{year}.csv"
-        filename = f"pbp_participation_{year}.csv"
+        filename = f"play_by_play_{year}.csv"
+        #filename = f"pbp_participation_{year}.csv"
         url = f"{base_url}/{filename}"
         path = os.path.join(directory, filename)
 

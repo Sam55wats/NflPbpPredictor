@@ -142,7 +142,7 @@ class CleanCombinePBP:
         all_dfs = []
         for filename in os.listdir(directory):
             year = int(filename.split('_')[-1].split('.')[0])
-            if 2016<= year <= 2023:
+            if 2020<= year <= 2024:
                 path = os.path.join(directory, filename)
                 df = pd.read_csv(path, low_memory=False)
                 df["season"] = year
@@ -153,15 +153,3 @@ class CleanCombinePBP:
 
     #combine_cleaned_data()
 
-    def merge_participation_data(self, pbp_df, year):
-        path = f"nfl_pbp_participation_csvs/pbp_participation_{year}.csv"
-        if not os.path.exists(path):
-            print(f"Participation data for {year} not found.")
-            return pbp_df
-
-        part_df = pd.read_csv(path, low_memory=False)
-
-        pbp_df = pbp_df.rename(columns={"game_id": "nflverse_game_id"})
-        # Merge on game_id and play_id
-        merged_df = pd.merge(pbp_df, part_df, on=["nflverse_game_id", "play_id"], how="left")
-        return merged_df

@@ -1,7 +1,7 @@
 import pandas as pd
 import pdb
 from sklearn.linear_model import LogisticRegression
-from sklearn.model_selection import train_test_split, RandomizedSearchCV
+from sklearn.model_selection import train_test_split, RandomizedSearchCV, cross_validate
 from sklearn.metrics import accuracy_score
 from sklearn.metrics import confusion_matrix
 from sklearn.metrics import classification_report
@@ -12,46 +12,22 @@ from scipy.stats import randint
 import matplotlib.pyplot as plt
 import numpy as np
 import seaborn as sns
-import re
+import joblib
+import os
 
 from sklearn.tree import export_graphviz
 from IPython.display import Image
 import graphviz
 
+MODEL_DIR = "saved_team_models"
+os.makedirs("saved_team_models", exist_ok=True)
 
 valid_play_types = ["pass", "run", "punt", "field_goal"]
-cleaner = CleanCombinePBP()
+#cleaner = CleanCombinePBP()
 #cleaner.clean_data(valid_play_types, "cleaned_pbp_forest_part")
-#cleaner.combine_cleaned_data("cleaned_pbp_forest_part", "combined_pbp_1623_forest.csv")
+#cleaner.combine_cleaned_data("cleaned_pbp_forest_part", "combined_pbp_2024_forest.csv")
 
-df = pd.read_csv("combined_pbp_1623_forest.csv", low_memory=False)
-
-merged_dfs = []
-
-for year in df["season"].unique():
-    df_year = df[df["season"] == year]
-    df_merged = cleaner.merge_participation_data(df_year, year)
-    merged_dfs.append(df_merged)
-
-df =pd.concat(merged_dfs, ignore_index=True)
-
-def parse_personnel(personnel):
-    counts = {"RB": 0, "TE": 0, "WR": 0, "DL": 0, "LB": 0, "DB": 0}
-
-    if pd.isna(personnel):
-        return pd.Series(counts)
-    
-    matches = re.findall(r"(\d+)\s*(RB|TE|WR|DL|LB|DB)", personnel)
-
-    for num, pos in matches:
-        counts[pos] += int(num)
-
-    return pd.Series(counts)
-
-off_personnel = df["offense_personnel"].apply(parse_personnel).add_prefix("off_")
-def_personnel = df["defense_personnel"].apply(parse_personnel).add_prefix("def_")
-
-df = pd.concat([df, off_personnel, def_personnel], axis=1)
+df = pd.read_csv("combined_pbp_2024_forest.csv", low_memory=False)
 
 df["is_losing"] = (df["score_differential"] < 0).astype(int)
 df["short_yardage"] = (df["ydstogo"] <= 3).astype(int)
@@ -61,8 +37,9 @@ df["quarter_half"] = (df["qtr"] <= 2).astype(int)  # 1st half = 1, 2nd half = 0
 df["clock_pressure"] = (df["half_seconds_remaining"] <= 120).astype(int)  # 2 minutes or less in the half
 df["red_zone"] = (df["yardline_100"] <= 20).astype(int)  # within 20 yards of the end zone
 df["late_game"] = (df["game_seconds_remaining"] <= 120).astype(int)
-df["run_gap"] = df["run_gap"].fillna("None")
-df["run_location"] = df["run_location"].fillna("None")
+df["team_short_pass_rate"] = df.groupby("posteam")["short_yardage"].transform(lambda x: x.mean() if x.sum() > 0 else 0)
+df["team_pass_rate"] = df.groupby("posteam")["play_type"].transform(lambda x: (x == "pass").mean())
+
 
 features = ["down", "ydstogo", "yardline_100", "qtr", "game_seconds_remaining", 
             "score_differential", "posteam_type", "defteam", "is_losing", 
@@ -71,11 +48,9 @@ features = ["down", "ydstogo", "yardline_100", "qtr", "game_seconds_remaining",
             "defteam_timeouts_remaining", "posteam_timeouts_remaining", "half_seconds_remaining",
             "quarter_seconds_remaining"]
 
-personnel_feats = list(off_personnel.columns) + list(def_personnel.columns)
-features += personnel_feats
-
 target = "play_type"
 team_models = {}
+
 
 for team in df["posteam"].unique():
     df_team = df[df["posteam"] == team]
@@ -85,7 +60,11 @@ for team in df["posteam"].unique():
 
     X = pd.get_dummies(X, columns=["posteam_type", "defteam"], drop_first=True) # Convert categorical variables to dummy variables
 
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, stratify=y)
+    feature_names = X.columns.tolist()
+    feature_path = os.path.join(MODEL_DIR, f"{team}_feature_names.joblib")
+    joblib.dump(feature_names, feature_path)
+
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
 
     param_dist = {
     "n_estimators": randint(50, 200),
@@ -101,7 +80,7 @@ for team in df["posteam"].unique():
         base_model,
         param_distributions=param_dist,
         n_iter=25,            
-        cv=3,                 
+        cv=2,                 
         scoring='accuracy',
         n_jobs=-1,           
         verbose=0,
@@ -117,6 +96,17 @@ for team in df["posteam"].unique():
 
     y_pred = model.predict(X_test)
 
+    '''X_test_copy = X_test.copy()
+    X_test_copy["actual"] = y_test.values
+    X_test_copy["predicted"] = y_pred
+
+    misclassified_runs_as_pass = X_test_copy[(X_test_copy["actual"] == "run") & (X_test_copy["predicted"] == "pass")]
+    misclassified_passes_as_run = X_test_copy[(X_test_copy["actual"] == "pass") & (X_test_copy["predicted"] == "run")]
+
+    confused_pass_run = pd.concat([misclassified_runs_as_pass, misclassified_passes_as_run])
+    #print(confused_pass_run)'''
+
+
     accuracy = accuracy_score(y_test, y_pred)
 
     print(f"Accuracy for {team}: {accuracy:.4f}")
@@ -124,10 +114,18 @@ for team in df["posteam"].unique():
     cm = confusion_matrix(y_test, y_pred)
     labels = sorted(y.unique())
     cm_df = pd.DataFrame(cm, index = [f"Actual: {label}" for label in labels], columns = [f"Predicted: {label}" for label in labels])
-    #print(f"Confusion Matrix for {team}:\n{cm_df}\n")
-    #print(classification_report(y_test, y_pred))
+    print(f"Confusion Matrix and Classification Report for {team}:\n{cm_df}\n")
+    print(classification_report(y_test, y_pred))
 
     team_models[team] = model
+
+    model_path = os.path.join(MODEL_DIR, f"{team}_rf_model.joblib")
+    joblib.dump(best_model, model_path)
+    print(f"Saved model for {team} to {model_path}\n")
+
+
+
+#print(df_team["play_type"].value_counts(normalize=True))
 
 '''X = df[features]
 X = pd.get_dummies(X, columns=["posteam_type", "defteam"], drop_first=True) # Convert categorical variables to dummy variables
