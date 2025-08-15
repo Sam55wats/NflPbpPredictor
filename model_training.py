@@ -114,8 +114,8 @@ for team in df["posteam"].unique():
     cm = confusion_matrix(y_test, y_pred)
     labels = sorted(y.unique())
     cm_df = pd.DataFrame(cm, index = [f"Actual: {label}" for label in labels], columns = [f"Predicted: {label}" for label in labels])
-    print(f"Confusion Matrix and Classification Report for {team}:\n{cm_df}\n")
-    print(classification_report(y_test, y_pred))
+    #print(f"Confusion Matrix and Classification Report for {team}:\n{cm_df}\n")
+    #print(classification_report(y_test, y_pred))
 
     team_models[team] = model
 
