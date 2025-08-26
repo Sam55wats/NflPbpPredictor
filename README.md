@@ -29,22 +29,3 @@ Built with **Django, React, and scikit-learn**, the app achieves **70%–78% acc
 
 ---
 
-## Project Structure
-NflPbpPredictor/
-│── clean_combine_pbp.py # Cleans and merges play-by-play + participation data  
-│── download_pbp.py # Downloads raw play-by-play data  
-│── model_training.py # Trains Random Forest models per team  
-│── db.sqlite3 # Local database for Django  
-│── manage.py # Django project manager  
-│── webpack.config.js # Webpack config for frontend  
-│── package.json # Frontend dependencies  
-│── package-lock.json  
-│── .gitignore  
-│── README.md  
-│  
-├── nflpredictor/ # Django app (backend logic, REST API, templates)  
-├── saved_team_models/ # Serialized Random Forest models per team  
-├── static/ # Static files (JS/CSS bundles)  
-├── assets/ # Frontend assets  
-├── core/ # Django core project config  
-
