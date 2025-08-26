@@ -31,9 +31,23 @@ Built with **Django, React, and scikit-learn**, the app achieves **70%–78% acc
 
 ### Backend (Django)
 ```bash
-cd NflPbpPredictor
+cd nflpredictor
 pip install -r requirements.txt
 python manage.py migrate
 python manage.py runserver
+```
 
+---
 
+### Frontend
+```bash
+npm install
+npm run dev
+```
+
+---
+
+### Future Improvements
+- Add predictions for real-time games during an NFL season
+- Improve model accuracy from 70-78% to 85%-92%
+- Expand predictions to include field goal range probabilities
