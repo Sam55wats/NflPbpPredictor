@@ -29,3 +29,11 @@ Built with **Django, React, and scikit-learn**, the app achieves **70%–78% acc
 
 ---
 
+### Backend (Django)
+```bash
+cd NflPbpPredictor
+pip install -r requirements.txt
+python manage.py migrate
+python manage.py runserver
+
+
