@@ -1,0 +1,15 @@
+{
+  "db_path": "/Users/samuelkim/NflPbpPredictor/nflpredictor/db.sqlite3",
+  "rows_used": 100000,
+  "train_rows": 80000,
+  "test_rows": 20000,
+  "feature_count_after_encoding": 53,
+  "target_distribution": {
+    "pass": 53087,
+    "run": 38355,
+    "punt": 5707,
+    "field_goal": 2851
+  },
+  "csv_path": "/Users/samuelkim/NflPbpPredictor/outputs/model_benchmark/model_benchmark_results.csv",
+  "plot_path": "/Users/samuelkim/NflPbpPredictor/outputs/model_benchmark/model_benchmark_results.png"
+}

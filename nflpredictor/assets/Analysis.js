@@ -1,6 +1,8 @@
 import React from 'react'
 import { useState, useEffect } from "react";
 
+import SiteChrome from './SiteChrome';
+import './espn-theme.css';
 import './analysis.css';
 /*
 1. show a list of plays (without revealing the actual outcome or model prediction)
@@ -69,42 +71,139 @@ export default function Analysis(){
 
     }, [seasonId, gameId, teamId]);
 
+    const activePlay = plays.find((play) => String(play.id) === String(selectedPlay));
+    const hasResult = Boolean(predictionResult);
+    const isCorrect = hasResult && predictionResult.prediction === predictionResult.actual;
+    const resultClass = hasResult ? (isCorrect ? "correct" : "incorrect") : "";
+
+    const handlePlayChange = (event) => {
+        const selectedId = event.target.value;
+        setSelectedPlay(selectedId);
+        setPredictionResult(undefined);
+
+        if (!selectedId) {
+            return;
+        }
+
+        fetch("/api/predict_play/?play_id=" + selectedId)
+            .then((res) => res.json())
+            .then((data) => {
+                setPredictionResult(data)
+            });
+    };
 
     return (
-        <div className="container mt-5">
-            <h1 className="text-center mb-4"> Game Analysis </h1>
-            <h2>Season: {seasonYear}, Game: {gameName}, Team: {teamName}</h2>
-            <label className='form-label'>Select a Play: </label>
-            <select className='form-select' onChange={(event) => {
-                const selectedId = event.target.value
-                setSelectedPlay(event.target.value);
+        <SiteChrome active="Analysis">
+            <main className="page-wrap">
+                <section className="card-panel hero-card">
+                    <div className="card-body analysis-header">
+                        <p className="section-kicker">Game Analysis</p>
+                        <h1 className="matchup-title">
+                            {gameName || "Loading matchup"}
+                        </h1>
+                        <div className="matchup-strip">
+                            <span className="meta-chip">Season {seasonYear || "..."}</span>
+                            <span className="meta-chip">{teamName || "Team loading"}</span>
+                            <span className="meta-chip">{plays.length ? `${plays.length} eligible plays` : "Loading plays"}</span>
+                        </div>
+                    </div>
+                </section>
 
-                fetch("/api/predict_play/?play_id=" + selectedId)
-                    .then((res) => res.json())
-                    .then((data) => {
-                        setPredictionResult(data)
-                    });
+                <div className="play-layout">
+                    <section className="card-panel">
+                        <div className="card-body">
+                            <h2 className="section-title">Play Selector</h2>
+                            <div className="field-group">
+                                <label className='field-label'>Historical snap</label>
+                                <select className='form-select' value={selectedPlay || ""} onChange={handlePlayChange}>
+                                    <option value="">Select a Play</option>
+                                    { plays.map((play) => {
+                                        return <option key={play.id} value={play.id}>
+                                            Q{play.quarter} / {play.time} - {play.down}&{play.ydstogo} @ {play.yardline_100} yd line
+                                        </option>
+                                    })}
+                                </select>
+                                <span className="field-help">Choose a pre-snap situation to reveal the model pick.</span>
+                            </div>
 
-            }}>
-                <option value="">Select a Play</option>
-                { plays.map((play) => {
-                    return <option key={play.id} value={play.id}>
-                        Q{play.quarter} / {play.time} - {play.down}&{play.ydstogo} @ {play.yardline_100} yd line 
-                    </option>
+                            {activePlay && (
+                                <div className="play-detail">
+                                    <div className="stat-box">
+                                        <div className="stat-label">Quarter</div>
+                                        <div className="stat-value">Q{activePlay.quarter}</div>
+                                    </div>
+                                    <div className="stat-box">
+                                        <div className="stat-label">Clock</div>
+                                        <div className="stat-value">{activePlay.time}</div>
+                                    </div>
+                                    <div className="stat-box">
+                                        <div className="stat-label">Down/Distance</div>
+                                        <div className="stat-value">{activePlay.down}&{activePlay.ydstogo}</div>
+                                    </div>
+                                    <div className="stat-box">
+                                        <div className="stat-label">Yard Line</div>
+                                        <div className="stat-value">{activePlay.yardline_100}</div>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    </section>
 
-                })}
+                    <aside>
+                        <section className={`card-panel prediction-outcome ${resultClass}`}>
+                            <div className="card-body">
+                                <h2 className="section-title">Model Pick</h2>
+                                {hasResult ? (
+                                    <div className="prediction-grid">
+                                        <div className="result-card">
+                                            <div className="result-label">Prediction</div>
+                                            <div className="result-value">{predictionResult.prediction}</div>
+                                        </div>
+                                        <div className="result-card">
+                                            <div className="result-label">Actual Result</div>
+                                            <div className="result-value">{predictionResult.actual}</div>
+                                        </div>
+                                        <span className="status-pill">
+                                            <span className={`status-dot ${isCorrect ? "ready" : ""}`}></span>
+                                            {isCorrect ? "Model matched" : "Model missed"}
+                                        </span>
+                                    </div>
+                                ) : (
+                                    <div className="prediction-grid">
+                                        <span className="status-pill">
+                                            <span className="status-dot"></span>
+                                            Awaiting play
+                                        </span>
+                                        <ul className="headline-list">
+                                            <li>Pick a snap to call the team-specific model.</li>
+                                            <li>Prediction and actual result reveal side by side.</li>
+                                            <li>Pass, run, punt, and field goal are supported outcomes.</li>
+                                        </ul>
+                                    </div>
+                                )}
+                            </div>
+                        </section>
 
-            
-            </select>
-            
-
-            <br></br>
-            {predictionResult && (
-            <div className="prediction-box">
-                <h4>Prediction: {predictionResult.prediction}</h4>
-                <h4>Actual: {predictionResult.actual}</h4>
-            </div>
-            )}
-        </div>
+                        <section className="card-panel rail-card">
+                            <div className="card-body">
+                                <h2 className="section-title">Game Context</h2>
+                                <div className="info-row">
+                                    <span className="info-label">Season</span>
+                                    <span className="info-value">{seasonYear || "..."}</span>
+                                </div>
+                                <div className="info-row">
+                                    <span className="info-label">Team</span>
+                                    <span className="info-value">{teamName || "..."}</span>
+                                </div>
+                                <div className="info-row">
+                                    <span className="info-label">Plays</span>
+                                    <span className="info-value">{plays.length || "..."}</span>
+                                </div>
+                            </div>
+                        </section>
+                    </aside>
+                </div>
+            </main>
+        </SiteChrome>
     )
 }

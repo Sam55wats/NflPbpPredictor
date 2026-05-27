@@ -1,40 +1,9 @@
-body {
-  background-color: #2c3e50;
-  color: white;
-  font-family: "Roboto", sans-serif;
-  font-size: 18px;
+.rbt-menu {
+  max-height: 320px !important;
 }
 
-h1 {
-  font-weight: 700;
-  font-size: 2.5rem;
-
+.rbt-highlight-text {
+  background-color: rgba(215, 25, 32, 0.14);
+  color: var(--ink);
+  font-weight: 900;
 }
-
-label {
-  font-weight: 500;
-  font-size: 1.2rem;
-
-}
-
-.btn-primary {
-  background-color: #1abc9c;
-  border: none;
-  padding: 12px 24px;
-  border-radius: 12px;
-}
-
-.btn-primary:hover {
-  background-color: #16a085;
-}
-
-.container {
-  background-color: #34495e;
-  padding: 40px;
-  border-radius: 16px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
-
-}
-
-
-
