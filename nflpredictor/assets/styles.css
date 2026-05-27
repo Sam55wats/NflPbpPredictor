@@ -1,9 +1,9 @@
 .rbt-menu {
-  max-height: 320px !important;
+  max-height: min(420px, 60vh) !important;
 }
 
 .rbt-highlight-text {
-  background-color: rgba(215, 25, 32, 0.14);
+  background-color: rgba(19, 83, 181, 0.15);
   color: var(--ink);
   font-weight: 900;
 }

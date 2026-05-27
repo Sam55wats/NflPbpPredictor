@@ -1,9 +1,14 @@
 import React from 'react'
 import { useState, useEffect } from "react";
+import { Typeahead } from 'react-bootstrap-typeahead';
 
 import SiteChrome from './SiteChrome';
-import './espn-theme.css';
+import TeamLogo from './TeamLogo';
+import './gridiron-theme.css';
+import './styles.css';
 import './analysis.css';
+
+const MAX_SCROLLABLE_RESULTS = 1000;
 /*
 1. show a list of plays (without revealing the actual outcome or model prediction)
 2. user picks a play —> gets basic info (Down, distance, field position)
@@ -23,7 +28,7 @@ export default function Analysis(){
 
 
     const [seasonYear, setSeasonYear] = useState(undefined);
-    const [gameName, setGameName] = useState(undefined);
+    const [game, setGame] = useState(undefined);
     const [teamName, setTeamName] = useState(undefined);
 
     const myKeysValues = window.location.search;
@@ -52,7 +57,7 @@ export default function Analysis(){
             .then(data => {
                 const game = data.find(g => g.id === parseInt(gameId));
                 if (game) {
-                    setGameName(`${game.home_team.team_name} vs ${game.away_team.team_name} (Week ${game.week})`);
+                    setGame(game);
                 }
             });
 
@@ -67,7 +72,10 @@ export default function Analysis(){
 
         fetch(`/api/plays/?game_id=${gameId}&team_id=${teamId}`)
             .then(res => res.json())
-            .then(data => setPlays(data));
+            .then(data => setPlays(data.map((play) => ({
+                ...play,
+                label: `Q${play.quarter} ${play.time} - ${play.down}&${play.ydstogo} at ${play.yardline_100}`
+            }))));
 
     }, [seasonId, gameId, teamId]);
 
@@ -76,8 +84,8 @@ export default function Analysis(){
     const isCorrect = hasResult && predictionResult.prediction === predictionResult.actual;
     const resultClass = hasResult ? (isCorrect ? "correct" : "incorrect") : "";
 
-    const handlePlayChange = (event) => {
-        const selectedId = event.target.value;
+    const handlePlayChange = (selected) => {
+        const selectedId = selected.length ? selected[0].id : undefined;
         setSelectedPlay(selectedId);
         setPredictionResult(undefined);
 
@@ -98,9 +106,26 @@ export default function Analysis(){
                 <section className="card-panel hero-card">
                     <div className="card-body analysis-header">
                         <p className="section-kicker">Game Analysis</p>
-                        <h1 className="matchup-title">
-                            {gameName || "Loading matchup"}
-                        </h1>
+                        {game ? (
+                            <div className="matchup-feature" aria-label={`${game.away_team.team_name} at ${game.home_team.team_name}`}>
+                                <div className="matchup-team">
+                                    <TeamLogo team={game.away_team} size="hero" />
+                                    <span className="matchup-abbr">{game.away_team.team_abbr}</span>
+                                    <span className="matchup-name">{game.away_team.team_name}</span>
+                                </div>
+                                <div className="matchup-center">
+                                    <span className="matchup-week">Week {game.week}</span>
+                                    <span className="matchup-at">at</span>
+                                </div>
+                                <div className="matchup-team">
+                                    <TeamLogo team={game.home_team} size="hero" />
+                                    <span className="matchup-abbr">{game.home_team.team_abbr}</span>
+                                    <span className="matchup-name">{game.home_team.team_name}</span>
+                                </div>
+                            </div>
+                        ) : (
+                            <h1 className="matchup-title">Loading matchup</h1>
+                        )}
                         <div className="matchup-strip">
                             <span className="meta-chip">Season {seasonYear || "..."}</span>
                             <span className="meta-chip">{teamName || "Team loading"}</span>
@@ -110,19 +135,33 @@ export default function Analysis(){
                 </section>
 
                 <div className="play-layout">
-                    <section className="card-panel">
+                    <section className="card-panel selector-card">
                         <div className="card-body">
                             <h2 className="section-title">Play Selector</h2>
                             <div className="field-group">
                                 <label className='field-label'>Historical snap</label>
-                                <select className='form-select' value={selectedPlay || ""} onChange={handlePlayChange}>
-                                    <option value="">Select a Play</option>
-                                    { plays.map((play) => {
-                                        return <option key={play.id} value={play.id}>
-                                            Q{play.quarter} / {play.time} - {play.down}&{play.ydstogo} @ {play.yardline_100} yd line
-                                        </option>
-                                    })}
-                                </select>
+                                <Typeahead
+                                    className="picker-typeahead snap-typeahead"
+                                    id="snap-typeahead"
+                                    labelKey="label"
+                                    maxHeight="420px"
+                                    maxResults={MAX_SCROLLABLE_RESULTS}
+                                    options={plays}
+                                    paginate={false}
+                                    placeholder="Find a historical snap..."
+                                    selected={activePlay ? [activePlay] : []}
+                                    onChange={handlePlayChange}
+                                    renderMenuItemChildren={(play) => (
+                                        <div className="picker-option snap-option">
+                                            <span className="picker-option-label">Q{play.quarter} - {play.time}</span>
+                                            <span className="picker-option-primary">
+                                                <strong>{play.down}&{play.ydstogo}</strong>
+                                                <span className="picker-option-separator"> at </span>
+                                                {play.yardline_100} yard line
+                                            </span>
+                                        </div>
+                                    )}
+                                />
                                 <span className="field-help">Choose a pre-snap situation to reveal the model pick.</span>
                             </div>
 
