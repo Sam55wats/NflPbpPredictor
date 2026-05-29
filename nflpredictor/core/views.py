@@ -137,26 +137,50 @@ def staged_model_paths(team_abbr):
 def staged_models_available(team_abbr):
     return all(os.path.exists(path) for path in staged_model_paths(team_abbr).values())
 
+def predict_label_and_confidence(model, df):
+    prediction = model.predict(df)[0]
+    confidence = None
+    if hasattr(model, "predict_proba"):
+        classes = list(model.classes_)
+        if prediction in classes:
+            probability_index = classes.index(prediction)
+            confidence = float(model.predict_proba(df)[0][probability_index])
+    return prediction, confidence
+
 def predict_with_staged_model(team_abbr, play_data):
     paths = staged_model_paths(team_abbr)
     feature_names = joblib.load(paths["features"])
     df = prepare_prediction_frame(play_data, feature_names)
 
     stage_model = joblib.load(paths["stage"])
-    stage_prediction = stage_model.predict(df)[0]
+    stage_prediction, stage_confidence = predict_label_and_confidence(stage_model, df)
 
     if stage_prediction == "offense":
         final_model = joblib.load(paths["offense"])
     else:
         final_model = joblib.load(paths["special"])
 
-    return final_model.predict(df)[0], "staged"
+    prediction, prediction_confidence = predict_label_and_confidence(final_model, df)
+    return {
+        "prediction": prediction,
+        "model_type": "staged",
+        "stage_prediction": stage_prediction,
+        "stage_confidence": stage_confidence,
+        "prediction_confidence": prediction_confidence,
+    }
 
 def predict_with_flat_model(team_abbr, play_data):
     model = joblib.load(model_file(f"{team_abbr}_rf_model.joblib"))
     feature_names = joblib.load(model_file(f"{team_abbr}_feature_names.joblib"))
     df = prepare_prediction_frame(play_data, feature_names)
-    return model.predict(df)[0], "flat"
+    prediction, prediction_confidence = predict_label_and_confidence(model, df)
+    return {
+        "prediction": prediction,
+        "model_type": "flat",
+        "stage_prediction": None,
+        "stage_confidence": None,
+        "prediction_confidence": prediction_confidence,
+    }
 
 @api_view(['GET'])
 def predict_play(request):
@@ -174,14 +198,13 @@ def predict_play(request):
     team_abbr = play.posteam.team_abbr
     play_data = build_play_features(play)
     if staged_models_available(team_abbr):
-        prediction, model_type = predict_with_staged_model(team_abbr, play_data)
+        prediction_result = predict_with_staged_model(team_abbr, play_data)
     else:
-        prediction, model_type = predict_with_flat_model(team_abbr, play_data)
+        prediction_result = predict_with_flat_model(team_abbr, play_data)
 
     return Response({
-        "prediction": prediction,
+        **prediction_result,
         "actual": play.play_type,
-        "model_type": model_type,
     })
 
 def home(request):

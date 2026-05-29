@@ -9,6 +9,32 @@ import './styles.css';
 import './analysis.css';
 
 const MAX_SCROLLABLE_RESULTS = 1000;
+const formatPercent = (value) => {
+    if (value === undefined || value === null) {
+        return "N/A";
+    }
+    return `${Math.round(value * 100)}%`;
+};
+
+const modelLabel = (modelType) => {
+    if (modelType === "staged") {
+        return "Staged";
+    }
+    if (modelType === "flat") {
+        return "Flat";
+    }
+    return "Pending";
+};
+
+const stageLabel = (stagePrediction) => {
+    if (stagePrediction === "offense") {
+        return "Offense";
+    }
+    if (stagePrediction === "special") {
+        return "Special teams";
+    }
+    return "Single step";
+};
 /*
 1. show a list of plays (without revealing the actual outcome or model prediction)
 2. user picks a play —> gets basic info (Down, distance, field position)
@@ -194,9 +220,32 @@ export default function Analysis(){
                                 <h2 className="section-title">Model Pick</h2>
                                 {hasResult ? (
                                     <div className="prediction-grid">
+                                        <div className="model-summary">
+                                            <span className="status-pill">
+                                                <span className={`status-dot ${predictionResult.model_type === "staged" ? "ready" : ""}`}></span>
+                                                {modelLabel(predictionResult.model_type)} model
+                                            </span>
+                                            <div className="confidence-row">
+                                                <div>
+                                                    <span className="confidence-label">Route</span>
+                                                    <strong>{stageLabel(predictionResult.stage_prediction)}</strong>
+                                                </div>
+                                                <span>{formatPercent(predictionResult.stage_confidence)}</span>
+                                            </div>
+                                            <div className="confidence-meter" aria-label="Route confidence">
+                                                <span style={{ width: formatPercent(predictionResult.stage_confidence || 0) }}></span>
+                                            </div>
+                                        </div>
                                         <div className="result-card">
                                             <div className="result-label">Prediction</div>
                                             <div className="result-value">{predictionResult.prediction}</div>
+                                            <div className="confidence-row compact">
+                                                <span>Confidence</span>
+                                                <strong>{formatPercent(predictionResult.prediction_confidence)}</strong>
+                                            </div>
+                                            <div className="confidence-meter final" aria-label="Prediction confidence">
+                                                <span style={{ width: formatPercent(predictionResult.prediction_confidence || 0) }}></span>
+                                            </div>
                                         </div>
                                         <div className="result-card">
                                             <div className="result-label">Actual Result</div>

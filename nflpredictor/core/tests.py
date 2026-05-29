@@ -78,7 +78,13 @@ class PredictPlayFeatureTests(TestCase):
         self.assertNotIn("short_yardage", frame.columns)
         self.assertEqual(frame.iloc[0]["red_zone"], 1)
 
-    @patch("core.views.predict_with_flat_model", return_value=("run", "flat"))
+    @patch("core.views.predict_with_flat_model", return_value={
+        "prediction": "run",
+        "model_type": "flat",
+        "stage_prediction": None,
+        "stage_confidence": None,
+        "prediction_confidence": 0.61,
+    })
     @patch("core.views.staged_models_available", return_value=False)
     def test_predict_play_falls_back_to_flat_model(self, _staged_available, _flat_predict):
         request = APIRequestFactory().get("/api/predict_play/", {"play_id": self.play.id})
@@ -88,8 +94,15 @@ class PredictPlayFeatureTests(TestCase):
         self.assertEqual(response.data["prediction"], "run")
         self.assertEqual(response.data["actual"], "pass")
         self.assertEqual(response.data["model_type"], "flat")
+        self.assertEqual(response.data["prediction_confidence"], 0.61)
 
-    @patch("core.views.predict_with_staged_model", return_value=("pass", "staged"))
+    @patch("core.views.predict_with_staged_model", return_value={
+        "prediction": "pass",
+        "model_type": "staged",
+        "stage_prediction": "offense",
+        "stage_confidence": 0.88,
+        "prediction_confidence": 0.72,
+    })
     @patch("core.views.staged_models_available", return_value=True)
     def test_predict_play_uses_staged_model_when_available(self, _staged_available, _staged_predict):
         request = APIRequestFactory().get("/api/predict_play/", {"play_id": self.play.id})
@@ -99,3 +112,5 @@ class PredictPlayFeatureTests(TestCase):
         self.assertEqual(response.data["prediction"], "pass")
         self.assertEqual(response.data["actual"], "pass")
         self.assertEqual(response.data["model_type"], "staged")
+        self.assertEqual(response.data["stage_prediction"], "offense")
+        self.assertEqual(response.data["prediction_confidence"], 0.72)

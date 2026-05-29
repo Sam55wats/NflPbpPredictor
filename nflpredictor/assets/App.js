@@ -218,7 +218,7 @@ export default function App() {
                                     {isReady ? "Ready" : "Waiting"}
                                 </span>
                                 <ul className="headline-list mt-3">
-                                    <li>Team-specific random forest models power inference.</li>
+                                    <li>Team-specific staged models power inference.</li>
                                     <li>Saved feature lists align the selected play before prediction.</li>
                                     <li>Results reveal only after a historical play is chosen.</li>
                                 </ul>

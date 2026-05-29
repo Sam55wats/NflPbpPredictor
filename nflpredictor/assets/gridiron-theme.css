@@ -687,6 +687,15 @@ body {
   gap: 12px;
 }
 
+.model-summary {
+  background: var(--panel-soft);
+  border: 1px solid #dde5ef;
+  border-radius: 8px;
+  display: grid;
+  gap: 10px;
+  padding: 13px;
+}
+
 .result-card {
   border-radius: 8px;
   border: 1px solid #d8d8d8;
@@ -709,6 +718,50 @@ body {
   line-height: 1;
   margin-top: 8px;
   text-transform: capitalize;
+}
+
+.confidence-row {
+  align-items: center;
+  color: var(--muted);
+  display: flex;
+  font-size: 0.78rem;
+  font-weight: 800;
+  justify-content: space-between;
+  text-transform: uppercase;
+}
+
+.confidence-row strong {
+  color: var(--ink);
+  font-size: 0.88rem;
+  text-transform: capitalize;
+}
+
+.confidence-row.compact {
+  margin-top: 12px;
+}
+
+.confidence-label {
+  display: block;
+  font-size: 0.66rem;
+  letter-spacing: 0.06em;
+}
+
+.confidence-meter {
+  background: #e0e7f0;
+  border-radius: 999px;
+  height: 8px;
+  overflow: hidden;
+}
+
+.confidence-meter span {
+  background: var(--league-blue);
+  display: block;
+  height: 100%;
+  min-width: 3px;
+}
+
+.confidence-meter.final span {
+  background: var(--accent-red);
 }
 
 .prediction-outcome {
