@@ -2,6 +2,7 @@
   "name": "nflpredictor-frontend",
   "version": "1.0.0",
   "scripts": {
+    "build": "webpack --mode production",
     "dev": "webpack --mode development --watch"
   },
   "devDependencies": {
