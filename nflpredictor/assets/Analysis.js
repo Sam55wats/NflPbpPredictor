@@ -6,7 +6,6 @@ import SiteChrome from './SiteChrome';
 import TeamLogo from './TeamLogo';
 import './gridiron-theme.css';
 import './styles.css';
-import './analysis.css';
 
 const MAX_SCROLLABLE_RESULTS = 1000;
 const formatPercent = (value) => {
