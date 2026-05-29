@@ -442,6 +442,28 @@ def score_predictions(name, y_true, y_pred, fit_seconds):
     return row
 
 
+def score_predictions_by_team(name, test_df, y_pred):
+    rows = []
+    for team in sorted(test_df["posteam"].unique()):
+        team_mask = test_df["posteam"] == team
+        team_true = test_df.loc[team_mask, "play_type"]
+        team_pred = y_pred.loc[team_mask]
+        report = classification_report(team_true, team_pred, labels=LABELS, output_dict=True, zero_division=0)
+        row = {
+            "experiment": name,
+            "team": team,
+            "support": int(team_mask.sum()),
+            "accuracy": accuracy_score(team_true, team_pred),
+            "macro_f1": f1_score(team_true, team_pred, labels=LABELS, average="macro", zero_division=0),
+            "weighted_f1": f1_score(team_true, team_pred, labels=LABELS, average="weighted", zero_division=0),
+        }
+        for label in LABELS:
+            row[f"f1_{label}"] = report[label]["f1-score"]
+            row[f"recall_{label}"] = report[label]["recall"]
+        rows.append(row)
+    return rows
+
+
 def run_experiments(train_df, test_df):
     no_bucket_features = [f for f in BASE_FEATURES if f not in BUCKET_FEATURES]
     experiments = [
@@ -708,11 +730,14 @@ def main():
     results.to_csv(OUT_DIR / "experiment_results.csv", index=False)
 
     class_rows = []
+    team_rows = []
     for name, pred in predictions.items():
         report = classification_report(test_df["play_type"], pred, labels=LABELS, output_dict=True, zero_division=0)
         for label in LABELS:
             class_rows.append({"experiment": name, "class": label, **report[label]})
+        team_rows.extend(score_predictions_by_team(name, test_df, pred))
     pd.DataFrame(class_rows).to_csv(OUT_DIR / "per_class_results.csv", index=False)
+    pd.DataFrame(team_rows).to_csv(OUT_DIR / "per_team_results.csv", index=False)
 
     for name, pred in predictions.items():
         cm = confusion_matrix(test_df["play_type"], pred, labels=LABELS)
