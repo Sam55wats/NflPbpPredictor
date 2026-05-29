@@ -1,0 +1,12 @@
+feature,mismatches,mismatch_rate,stored_unique_sample
+red_zone,0,0.0,"0, 1"
+clock_pressure,0,0.0,"0, 1"
+short_yardage,0,0.0,"0, 1"
+medium_yardage,0,0.0,"0, 1"
+long_yardage,0,0.0,"0, 1"
+is_losing,0,0.0,"0, 1"
+late_game,0,0.0,"0, 1"
+quarter_half,0,0.0,"0, 1"
+season,0,0.0,"2020, 2021, 2022, 2023, 2024"
+posteam_type,0,0.0,"away, home"
+defteam,0,0.0,"ARI, ATL, BAL, BUF, CAR, CHI"

@@ -1,0 +1,426 @@
+{
+  "db_path": "/Users/samuelkim/NflPbpPredictor/nflpredictor/db.sqlite3",
+  "model_dir": "/Users/samuelkim/NflPbpPredictor/nflpredictor/saved_team_models",
+  "backup_dir": "/Users/samuelkim/NflPbpPredictor/nflpredictor/saved_team_models/backup_before_staged_training",
+  "teams": [
+    {
+      "team": "ARI",
+      "plays": 5918,
+      "encoded_features": 50,
+      "play_type_counts": {
+        "pass": 3136,
+        "run": 2310,
+        "punt": 301,
+        "field_goal": 171
+      },
+      "seconds": 2.5650713748764247
+    },
+    {
+      "team": "ATL",
+      "plays": 5696,
+      "encoded_features": 50,
+      "play_type_counts": {
+        "pass": 2881,
+        "run": 2325,
+        "punt": 306,
+        "field_goal": 184
+      },
+      "seconds": 2.556030791020021
+    },
+    {
+      "team": "BAL",
+      "plays": 6234,
+      "encoded_features": 50,
+      "play_type_counts": {
+        "pass": 2861,
+        "run": 2860,
+        "punt": 325,
+        "field_goal": 188
+      },
+      "seconds": 2.6889606658369303
+    },
+    {
+      "team": "BUF",
+      "plays": 6457,
+      "encoded_features": 50,
+      "play_type_counts": {
+        "pass": 3484,
+        "run": 2514,
+        "punt": 281,
+        "field_goal": 178
+      },
+      "seconds": 2.7930720830336213
+    },
+    {
+      "team": "CAR",
+      "plays": 5630,
+      "encoded_features": 50,
+      "play_type_counts": {
+        "pass": 2957,
+        "run": 2160,
+        "punt": 357,
+        "field_goal": 156
+      },
+      "seconds": 2.47795774997212
+    },
+    {
+      "team": "CHI",
+      "plays": 5759,
+      "encoded_features": 50,
+      "play_type_counts": {
+        "pass": 2902,
+        "run": 2355,
+        "punt": 349,
+        "field_goal": 153
+      },
+      "seconds": 2.5358119159936905
+    },
+    {
+      "team": "CIN",
+      "plays": 6149,
+      "encoded_features": 50,
+      "play_type_counts": {
+        "pass": 3528,
+        "run": 2091,
+        "punt": 350,
+        "field_goal": 180
+      },
+      "seconds": 2.556677709100768
+    },
+    {
+      "team": "CLE",
+      "plays": 6130,
+      "encoded_features": 50,
+      "play_type_counts": {
+        "pass": 3180,
+        "run": 2436,
+        "punt": 369,
+        "field_goal": 145
+      },
+      "seconds": 2.5405205418355763
+    },
+    {
+      "team": "DAL",
+      "plays": 6314,
+      "encoded_features": 50,
+      "play_type_counts": {
+        "pass": 3452,
+        "run": 2361,
+        "punt": 304,
+        "field_goal": 197
+      },
+      "seconds": 2.965921208029613
+    },
+    {
+      "team": "DEN",
+      "plays": 5747,
+      "encoded_features": 50,
+      "play_type_counts": {
+        "pass": 2978,
+        "run": 2209,
+        "punt": 389,
+        "field_goal": 171
+      },
+      "seconds": 2.669323124922812
+    },
+    {
+      "team": "DET",
+      "plays": 6000,
+      "encoded_features": 50,
+      "play_type_counts": {
+        "pass": 3225,
+        "run": 2344,
+        "punt": 289,
+        "field_goal": 142
+      },
+      "seconds": 2.6901745840441436
+    },
+    {
+      "team": "GB",
+      "plays": 5908,
+      "encoded_features": 50,
+      "play_type_counts": {
+        "pass": 3081,
+        "run": 2382,
+        "punt": 284,
+        "field_goal": 161
+      },
+      "seconds": 2.905255040852353
+    },
+    {
+      "team": "HOU",
+      "plays": 5856,
+      "encoded_features": 50,
+      "play_type_counts": {
+        "pass": 3180,
+        "run": 2094,
+        "punt": 403,
+        "field_goal": 179
+      },
+      "seconds": 2.510302250040695
+    },
+    {
+      "team": "IND",
+      "plays": 5836,
+      "encoded_features": 50,
+      "play_type_counts": {
+        "pass": 2990,
+        "run": 2337,
+        "punt": 318,
+        "field_goal": 191
+      },
+      "seconds": 2.6618187909480184
+    },
+    {
+      "team": "JAX",
+      "plays": 5765,
+      "encoded_features": 50,
+      "play_type_counts": {
+        "pass": 3239,
+        "run": 2039,
+        "punt": 331,
+        "field_goal": 156
+      },
+      "seconds": 2.5475217499770224
+    },
+    {
+      "team": "KC",
+      "plays": 6866,
+      "encoded_features": 50,
+      "play_type_counts": {
+        "pass": 3952,
+        "run": 2401,
+        "punt": 315,
+        "field_goal": 198
+      },
+      "seconds": 2.948248416883871
+    },
+    {
+      "team": "LA",
+      "plays": 6314,
+      "encoded_features": 50,
+      "play_type_counts": {
+        "pass": 3365,
+        "run": 2398,
+        "punt": 359,
+        "field_goal": 192
+      },
+      "seconds": 2.7885431670583785
+    },
+    {
+      "team": "LAC",
+      "plays": 6081,
+      "encoded_features": 50,
+      "play_type_counts": {
+        "pass": 3416,
+        "run": 2153,
+        "punt": 338,
+        "field_goal": 174
+      },
+      "seconds": 2.5905137499794364
+    },
+    {
+      "team": "LV",
+      "plays": 5748,
+      "encoded_features": 50,
+      "play_type_counts": {
+        "pass": 3191,
+        "run": 2057,
+        "punt": 311,
+        "field_goal": 189
+      },
+      "seconds": 2.443677125032991
+    },
+    {
+      "team": "MIA",
+      "plays": 5812,
+      "encoded_features": 50,
+      "play_type_counts": {
+        "pass": 3175,
+        "run": 2136,
+        "punt": 327,
+        "field_goal": 174
+      },
+      "seconds": 2.568749750033021
+    },
+    {
+      "team": "MIN",
+      "plays": 5907,
+      "encoded_features": 50,
+      "play_type_counts": {
+        "pass": 3257,
+        "run": 2151,
+        "punt": 332,
+        "field_goal": 167
+      },
+      "seconds": 2.698636499932036
+    },
+    {
+      "team": "NE",
+      "plays": 5592,
+      "encoded_features": 50,
+      "play_type_counts": {
+        "pass": 2839,
+        "run": 2232,
+        "punt": 358,
+        "field_goal": 163
+      },
+      "seconds": 2.4805292920209467
+    },
+    {
+      "team": "NO",
+      "plays": 5852,
+      "encoded_features": 50,
+      "play_type_counts": {
+        "pass": 2939,
+        "run": 2376,
+        "punt": 377,
+        "field_goal": 160
+      },
+      "seconds": 2.6902927909977734
+    },
+    {
+      "team": "NYG",
+      "plays": 5810,
+      "encoded_features": 50,
+      "play_type_counts": {
+        "pass": 3057,
+        "run": 2202,
+        "punt": 394,
+        "field_goal": 157
+      },
+      "seconds": 2.480669334065169
+    },
+    {
+      "team": "NYJ",
+      "plays": 5635,
+      "encoded_features": 50,
+      "play_type_counts": {
+        "pass": 3172,
+        "run": 1906,
+        "punt": 398,
+        "field_goal": 159
+      },
+      "seconds": 2.4368230421096087
+    },
+    {
+      "team": "PHI",
+      "plays": 6465,
+      "encoded_features": 50,
+      "play_type_counts": {
+        "pass": 3136,
+        "run": 2844,
+        "punt": 324,
+        "field_goal": 161
+      },
+      "seconds": 2.666846083011478
+    },
+    {
+      "team": "PIT",
+      "plays": 6124,
+      "encoded_features": 50,
+      "play_type_counts": {
+        "pass": 3248,
+        "run": 2292,
+        "punt": 399,
+        "field_goal": 185
+      },
+      "seconds": 2.511949541978538
+    },
+    {
+      "team": "SEA",
+      "plays": 5619,
+      "encoded_features": 50,
+      "play_type_counts": {
+        "pass": 3092,
+        "run": 2004,
+        "punt": 364,
+        "field_goal": 159
+      },
+      "seconds": 2.366167875006795
+    },
+    {
+      "team": "SF",
+      "plays": 6133,
+      "encoded_features": 50,
+      "play_type_counts": {
+        "pass": 3051,
+        "run": 2583,
+        "punt": 319,
+        "field_goal": 180
+      },
+      "seconds": 2.52791287493892
+    },
+    {
+      "team": "TB",
+      "plays": 6546,
+      "encoded_features": 50,
+      "play_type_counts": {
+        "pass": 3798,
+        "run": 2204,
+        "punt": 361,
+        "field_goal": 183
+      },
+      "seconds": 2.6299834998790175
+    },
+    {
+      "team": "TEN",
+      "plays": 5728,
+      "encoded_features": 50,
+      "play_type_counts": {
+        "pass": 2780,
+        "run": 2442,
+        "punt": 362,
+        "field_goal": 144
+      },
+      "seconds": 2.4214039999060333
+    },
+    {
+      "team": "WAS",
+      "plays": 6170,
+      "encoded_features": 50,
+      "play_type_counts": {
+        "pass": 3279,
+        "run": 2368,
+        "punt": 351,
+        "field_goal": 172
+      },
+      "seconds": 2.621946166967973
+    }
+  ],
+  "total_seconds": 83.5753167080693,
+  "features": [
+    "down",
+    "ydstogo",
+    "yardline_100",
+    "qtr",
+    "game_seconds_remaining",
+    "score_differential",
+    "posteam_type",
+    "defteam",
+    "is_losing",
+    "late_game",
+    "quarter_half",
+    "clock_pressure",
+    "red_zone",
+    "season",
+    "shotgun",
+    "no_huddle",
+    "goal_to_go",
+    "defteam_timeouts_remaining",
+    "posteam_timeouts_remaining",
+    "half_seconds_remaining",
+    "quarter_seconds_remaining"
+  ],
+  "removed_features": [
+    "short_yardage",
+    "medium_yardage",
+    "long_yardage"
+  ],
+  "staged_artifacts": [
+    "<TEAM>_stage_model.joblib",
+    "<TEAM>_offense_model.joblib",
+    "<TEAM>_special_model.joblib",
+    "<TEAM>_staged_feature_names.joblib"
+  ]
+}

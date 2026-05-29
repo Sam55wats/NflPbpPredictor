@@ -16,6 +16,26 @@ TEAM_NAME_MAP = {"ARI": "Arizona Cardinals", "ATL": "Atlanta Falcons", "BAL": "B
                  "SEA": "Seattle Seahawks", "TB": "Tampa Bay Buccaneers", "TEN": "Tennessee Titans", "WAS": "Washington Commanders"
                  }
 
+def value_or_default(row, column, default=None):
+    value = row[column] if column in row else default
+    return default if pd.isna(value) else value
+
+def bool_value(row, column):
+    value = value_or_default(row, column, 0)
+    return bool(int(value))
+
+def infer_posteam_type(row):
+    value = value_or_default(row, 'posteam_type')
+    if value:
+        return value
+    return 'home' if row['posteam'] == row['home_team'] else 'away'
+
+def infer_defteam(row):
+    value = value_or_default(row, 'defteam')
+    if value:
+        return value
+    return row['away_team'] if row['posteam'] == row['home_team'] else row['home_team']
+
 class Command(BaseCommand):
     help = 'seed database from CSV'
 
@@ -40,7 +60,7 @@ def run_seed(mode):
     elif mode == 'refresh':
         clear_data()
     
-    csv_path = '/Users/samuelkim/NflPbpPredictor/combined_pbp_2024_forest.csv'
+    csv_path = '/Users/samuelkim/NflPbpPredictor/combined_pbp_2020_2025_forest.csv'
 
     df = pd.read_csv(csv_path, low_memory=False)
 
@@ -70,6 +90,8 @@ def run_seed(mode):
         Play.objects.create(
             game=game_obj,
             posteam=posteam_obj,
+            posteam_type=infer_posteam_type(row),
+            defteam=infer_defteam(row),
             down=row['down'],
             ydstogo=row['ydstogo'],
             quarter=row['qtr'],
@@ -79,10 +101,19 @@ def run_seed(mode):
             score_differential=row['score_differential'],
             posteam_timeouts_remaining=row['posteam_timeouts_remaining'],
             defteam_timeouts_remaining=row['defteam_timeouts_remaining'],
-            shotgun=row['shotgun'],
-            no_huddle=row['no_huddle'],
-            goal_to_go=row['goal_to_go'],
+            shotgun=bool_value(row, 'shotgun'),
+            no_huddle=bool_value(row, 'no_huddle'),
+            goal_to_go=bool_value(row, 'goal_to_go'),
             yardline_100=row['yardline_100'],
             play_type=row['play_type'],
-            time=row['time']
+            time=row['time'],
+            is_losing=row['score_differential'] < 0,
+            short_yardage=row['ydstogo'] <= 3,
+            late_game=row['game_seconds_remaining'] <= 120,
+            medium_yardage=3 < row['ydstogo'] <= 7,
+            long_yardage=row['ydstogo'] > 7,
+            quarter_half=int(row['qtr'] <= 2),
+            clock_pressure=row['half_seconds_remaining'] <= 120,
+            red_zone=row['yardline_100'] <= 20,
+            season=int(row['season']),
         )

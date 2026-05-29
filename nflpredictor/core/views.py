@@ -76,58 +76,112 @@ TEAM_ABBR = {
     "Washington Commanders": "WAS"
 }
 
+MODEL_DIR = "saved_team_models"
+OFFENSE_PLAY_TYPES = {"pass", "run"}
+SPECIAL_TEAMS_PLAY_TYPES = {"punt", "field_goal"}
+
+def model_file(*parts):
+    return os.path.join(settings.BASE_DIR, MODEL_DIR, *parts)
+
+def build_play_features(play):
+    posteam_type = "home" if play.posteam_id == play.game.home_team_id else "away"
+    defteam = play.game.away_team.team_abbr if posteam_type == "home" else play.game.home_team.team_abbr
+    ydstogo = play.ydstogo or 0
+    yardline_100 = play.yardline_100 or 0
+    half_seconds_remaining = play.half_seconds_remaining or 0
+    game_seconds_remaining = play.game_seconds_remaining or 0
+    score_differential = play.score_differential or 0
+
+    return {
+        'down': play.down,
+        'ydstogo': ydstogo,
+        'yardline_100': yardline_100,
+        'qtr': play.quarter,
+        'quarter_seconds_remaining': play.quarter_seconds_remaining,
+        'half_seconds_remaining': half_seconds_remaining,
+        'game_seconds_remaining': game_seconds_remaining,
+        'score_differential': score_differential,
+        'posteam_timeouts_remaining': play.posteam_timeouts_remaining,
+        'defteam_timeouts_remaining': play.defteam_timeouts_remaining,
+        'shotgun': int(play.shotgun),
+        'no_huddle': int(play.no_huddle),
+        'goal_to_go': int(play.goal_to_go),
+        'posteam_type': posteam_type,
+        'defteam': defteam,
+        'is_losing': int(score_differential < 0),
+        # Kept for compatibility with the currently saved flat models. Newly
+        # trained no-bucket models simply omit these names from feature_names.
+        'short_yardage': int(ydstogo <= 3),
+        'late_game': int(game_seconds_remaining <= 120),
+        'medium_yardage': int(3 < ydstogo <= 7),
+        'long_yardage': int(ydstogo > 7),
+        'quarter_half': int(play.quarter <= 2),
+        'clock_pressure': int(half_seconds_remaining <= 120),
+        'red_zone': int(yardline_100 <= 20),
+        'season': play.game.season.year,
+    }
+
+def prepare_prediction_frame(play_data, feature_names):
+    df = pd.DataFrame([play_data])
+    df = pd.get_dummies(df, columns=["posteam_type", "defteam"], drop_first=True)
+    return df.reindex(columns=feature_names, fill_value=0)
+
+def staged_model_paths(team_abbr):
+    return {
+        "stage": model_file(f"{team_abbr}_stage_model.joblib"),
+        "offense": model_file(f"{team_abbr}_offense_model.joblib"),
+        "special": model_file(f"{team_abbr}_special_model.joblib"),
+        "features": model_file(f"{team_abbr}_staged_feature_names.joblib"),
+    }
+
+def staged_models_available(team_abbr):
+    return all(os.path.exists(path) for path in staged_model_paths(team_abbr).values())
+
+def predict_with_staged_model(team_abbr, play_data):
+    paths = staged_model_paths(team_abbr)
+    feature_names = joblib.load(paths["features"])
+    df = prepare_prediction_frame(play_data, feature_names)
+
+    stage_model = joblib.load(paths["stage"])
+    stage_prediction = stage_model.predict(df)[0]
+
+    if stage_prediction == "offense":
+        final_model = joblib.load(paths["offense"])
+    else:
+        final_model = joblib.load(paths["special"])
+
+    return final_model.predict(df)[0], "staged"
+
+def predict_with_flat_model(team_abbr, play_data):
+    model = joblib.load(model_file(f"{team_abbr}_rf_model.joblib"))
+    feature_names = joblib.load(model_file(f"{team_abbr}_feature_names.joblib"))
+    df = prepare_prediction_frame(play_data, feature_names)
+    return model.predict(df)[0], "flat"
+
 @api_view(['GET'])
 def predict_play(request):
     play_id = request.GET.get('play_id')
     print("Received play_id:", play_id)
 
 
-    play = Play.objects.get(id=play_id)
+    play = Play.objects.select_related(
+        'game__season',
+        'game__home_team',
+        'game__away_team',
+        'posteam',
+    ).get(id=play_id)
 
-    model_path = os.path.join("saved_team_models", f"{play.posteam.team_abbr}_rf_model.joblib")
-
-    model = joblib.load(model_path)
-
-    play_data = {
-        'down': play.down,
-        'ydstogo': play.ydstogo,
-        'yardline_100': play.yardline_100,
-        'qtr': play.quarter,
-        'quarter_seconds_remaining': play.quarter_seconds_remaining,
-        'half_seconds_remaining': play.half_seconds_remaining,
-        'game_seconds_remaining': play.game_seconds_remaining,
-        'score_differential': play.score_differential,
-        'posteam_timeouts_remaining': play.posteam_timeouts_remaining,
-        'defteam_timeouts_remaining': play.defteam_timeouts_remaining,
-        'shotgun': int(play.shotgun),
-        'no_huddle': int(play.no_huddle),
-        'goal_to_go': int(play.goal_to_go),
-        'posteam_type': play.posteam_type,
-        'defteam': play.defteam,
-        'is_losing': int(play.is_losing),
-        'short_yardage': int(play.short_yardage),
-        'late_game': int(play.late_game),
-        'medium_yardage': int(play.medium_yardage),
-        'long_yardage': int(play.long_yardage),
-        'quarter_half': play.quarter_half,
-        'clock_pressure': int(play.clock_pressure),
-        'red_zone': int(play.red_zone),
-        'season': play.season,
-    }
-
-    df = pd.DataFrame([play_data])
-    df = pd.get_dummies(df, columns=["posteam_type", "defteam"], drop_first=True)
-
-    feature_names_path = os.path.join("saved_team_models", f"{play.posteam.team_abbr}_feature_names.joblib")
-    feature_names = joblib.load(feature_names_path)
-    
-    df = df.reindex(columns=feature_names, fill_value=0)
-
-    prediction = model.predict(df)[0]
+    team_abbr = play.posteam.team_abbr
+    play_data = build_play_features(play)
+    if staged_models_available(team_abbr):
+        prediction, model_type = predict_with_staged_model(team_abbr, play_data)
+    else:
+        prediction, model_type = predict_with_flat_model(team_abbr, play_data)
 
     return Response({
         "prediction": prediction,
-        "actual": play.play_type
+        "actual": play.play_type,
+        "model_type": model_type,
     })
 
 def home(request):

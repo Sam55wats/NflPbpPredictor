@@ -19,15 +19,15 @@ from sklearn.tree import export_graphviz
 from IPython.display import Image
 import graphviz
 
-MODEL_DIR = "saved_team_models"
-os.makedirs("saved_team_models", exist_ok=True)
+MODEL_DIR = os.path.join("nflpredictor", "saved_team_models")
+os.makedirs(MODEL_DIR, exist_ok=True)
 
 valid_play_types = ["pass", "run", "punt", "field_goal"]
 #cleaner = CleanCombinePBP()
 #cleaner.clean_data(valid_play_types, "cleaned_pbp_forest_part")
 #cleaner.combine_cleaned_data("cleaned_pbp_forest_part", "combined_pbp_2024_forest.csv")
 
-df = pd.read_csv("combined_pbp_2024_forest.csv", low_memory=False)
+df = pd.read_csv("combined_pbp_2020_2025_forest.csv", low_memory=False)
 
 df["is_losing"] = (df["score_differential"] < 0).astype(int)
 df["short_yardage"] = (df["ydstogo"] <= 3).astype(int)
@@ -43,13 +43,30 @@ df["team_pass_rate"] = df.groupby("posteam")["play_type"].transform(lambda x: (x
 
 features = ["down", "ydstogo", "yardline_100", "qtr", "game_seconds_remaining", 
             "score_differential", "posteam_type", "defteam", "is_losing", 
-            "short_yardage", "late_game", "medium_yardage", "long_yardage", "quarter_half", 
-            "clock_pressure", "red_zone", "season", "shotgun", "no_huddle", "goal_to_go", 
+            "late_game", "quarter_half", "clock_pressure", "red_zone", "season", 
+            "shotgun", "no_huddle", "goal_to_go", 
             "defteam_timeouts_remaining", "posteam_timeouts_remaining", "half_seconds_remaining",
             "quarter_seconds_remaining"]
 
 target = "play_type"
 team_models = {}
+OFFENSE_PLAY_TYPES = {"pass", "run"}
+SPECIAL_TEAMS_PLAY_TYPES = {"punt", "field_goal"}
+
+def fixed_random_forest():
+    return RandomForestClassifier(
+        n_estimators=140,
+        max_depth=18,
+        min_samples_leaf=4,
+        min_samples_split=2,
+        max_features="sqrt",
+        class_weight="balanced_subsample",
+        random_state=42,
+        n_jobs=-1,
+    )
+
+def staged_label(play_type):
+    return "offense" if play_type in OFFENSE_PLAY_TYPES else "special"
 
 
 for team in df["posteam"].unique():
@@ -122,6 +139,27 @@ for team in df["posteam"].unique():
     model_path = os.path.join(MODEL_DIR, f"{team}_rf_model.joblib")
     joblib.dump(best_model, model_path)
     print(f"Saved model for {team} to {model_path}\n")
+
+    staged_feature_path = os.path.join(MODEL_DIR, f"{team}_staged_feature_names.joblib")
+    joblib.dump(feature_names, staged_feature_path)
+
+    stage_model = fixed_random_forest()
+    stage_model.fit(X_train, y_train.apply(staged_label))
+    stage_path = os.path.join(MODEL_DIR, f"{team}_stage_model.joblib")
+    joblib.dump(stage_model, stage_path)
+
+    offense_mask = y_train.isin(OFFENSE_PLAY_TYPES)
+    offense_model = fixed_random_forest()
+    offense_model.fit(X_train[offense_mask], y_train[offense_mask])
+    offense_path = os.path.join(MODEL_DIR, f"{team}_offense_model.joblib")
+    joblib.dump(offense_model, offense_path)
+
+    special_mask = y_train.isin(SPECIAL_TEAMS_PLAY_TYPES)
+    special_model = fixed_random_forest()
+    special_model.fit(X_train[special_mask], y_train[special_mask])
+    special_path = os.path.join(MODEL_DIR, f"{team}_special_model.joblib")
+    joblib.dump(special_model, special_path)
+    print(f"Saved staged models for {team} to {MODEL_DIR}/\n")
 
 
 

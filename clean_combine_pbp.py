@@ -116,8 +116,7 @@ class CleanCombinePBP:
     # epa trends --  epa grouped by season, posteam
     # popular plays -- play_type frequency by posteam, situation
 
-    def clean_data(self, valid_play_types, new_directory):
-        directory = "nfl_pbp_csvs"
+    def clean_data(self, valid_play_types, new_directory, directory="nfl_pbp_csvs"):
         # Clean play-by-play CSV files by removing rows with null play_type values
         for filename in os.listdir(directory):
             if filename.endswith(".csv"):
@@ -138,11 +137,11 @@ class CleanCombinePBP:
     #clean_data()
 
     # 2 pt conversionscdf_doown
-    def combine_cleaned_data(self, directory, csv_name):
+    def combine_cleaned_data(self, directory, csv_name, start_year=2020, end_year=2025):
         all_dfs = []
         for filename in os.listdir(directory):
             year = int(filename.split('_')[-1].split('.')[0])
-            if 2020<= year <= 2024:
+            if start_year <= year <= end_year:
                 path = os.path.join(directory, filename)
                 df = pd.read_csv(path, low_memory=False)
                 df["season"] = year
@@ -152,4 +151,3 @@ class CleanCombinePBP:
         df_combined.to_csv(csv_name, index=False)
 
     #combine_cleaned_data()
-

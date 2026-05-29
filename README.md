@@ -19,7 +19,7 @@ Built with **Django, React, and scikit-learn**, the app achieves **70%–78% acc
 **Frontend:** React, CSS  
 **Backend:** Django, Django REST Framework  
 **Machine Learning:** Python, scikit-learn, Pandas  
-**Data:** NFL play-by-play data (2020–2024) via [nflfastR](https://www.nflfastr.com/) and participation report  
+**Data:** NFL play-by-play data (2020–2024) via [nflfastR](https://www.nflfastr.com/) and participation reports  
 
 ---
 
