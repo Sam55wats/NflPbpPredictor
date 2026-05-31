@@ -1,0 +1,11 @@
+.git
+.DS_Store
+__pycache__/
+*.pyc
+node_modules/
+nflpredictor/node_modules/
+nflpredictor/staticfiles/
+nfl_pbp_csvs/
+cleaned_pbp_forest_part_*/
+combined_pbp_*_forest.csv
+outputs/
