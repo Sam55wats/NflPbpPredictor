@@ -4,7 +4,7 @@ module.exports = {
   entry: './assets/index.jsx',
   output: {
     path: path.resolve(__dirname, 'static'),
-    filename: 'index-bundle.jsx',
+    filename: 'index-bundle.js',
   },
   module: {
     rules: [
