@@ -34,6 +34,13 @@ SECRET_KEY = os.environ.get(
 DEBUG = os.environ.get('DEBUG', 'True') == 'True'
 
 ALLOWED_HOSTS = env_list('ALLOWED_HOSTS')
+RENDER_EXTERNAL_HOSTNAME = os.environ.get('RENDER_EXTERNAL_HOSTNAME')
+
+if RENDER_EXTERNAL_HOSTNAME:
+    ALLOWED_HOSTS.append(RENDER_EXTERNAL_HOSTNAME)
+
+if not DEBUG and not ALLOWED_HOSTS:
+    ALLOWED_HOSTS = ['.onrender.com']
 
 
 # Application definition
