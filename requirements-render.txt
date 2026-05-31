@@ -8,8 +8,3 @@ gunicorn==23.0.0
 whitenoise==6.9.0
 numpy==2.2.6
 scipy==1.16.3
-matplotlib==3.10.8
-seaborn==0.13.2
-ipython==9.10.1
-graphviz==0.20.3
-Pillow==12.2.0
