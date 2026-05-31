@@ -11,6 +11,10 @@ import pandas as pd
 from django.conf import settings
 
 
+def healthz(request):
+    return HttpResponse("OK", content_type="text/plain")
+
+
 @api_view(['GET'])
 def season_list(request):
     seasons = Season.objects.all().order_by('-year')

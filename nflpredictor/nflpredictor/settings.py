@@ -21,7 +21,13 @@ BASE_DIR = Path(__file__).resolve().parents[1]
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 def env_list(name, default=""):
-    return [value.strip() for value in os.environ.get(name, default).split(",") if value.strip()]
+    raw_value = os.environ.get(name, default)
+    return [
+        value.strip()
+        for chunk in raw_value.split(",")
+        for value in chunk.split()
+        if value.strip()
+    ]
 
 
 # SECURITY WARNING: keep the secret key used in production secret!
@@ -35,12 +41,15 @@ DEBUG = os.environ.get('DEBUG', 'True') == 'True'
 
 ALLOWED_HOSTS = env_list('ALLOWED_HOSTS')
 RENDER_EXTERNAL_HOSTNAME = os.environ.get('RENDER_EXTERNAL_HOSTNAME')
+NORTHFLANK_HOSTS = env_list('NF_HOSTS')
 
 if RENDER_EXTERNAL_HOSTNAME:
     ALLOWED_HOSTS.append(RENDER_EXTERNAL_HOSTNAME)
 
+ALLOWED_HOSTS.extend(NORTHFLANK_HOSTS)
+
 if not DEBUG and not ALLOWED_HOSTS:
-    ALLOWED_HOSTS = ['.onrender.com']
+    ALLOWED_HOSTS = ['.onrender.com', '.code.run']
 
 
 # Application definition

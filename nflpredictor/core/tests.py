@@ -4,7 +4,16 @@ from django.test import TestCase
 from rest_framework.test import APIRequestFactory
 
 from core.models import Game, Play, Season, Team
-from core.views import build_play_features, predict_play, prepare_prediction_frame
+from core.views import build_play_features, healthz, predict_play, prepare_prediction_frame
+
+
+class HealthCheckTests(TestCase):
+    def test_healthz_returns_ok(self):
+        request = APIRequestFactory().get("/healthz/")
+        response = healthz(request)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.content, b"OK")
 
 
 class PredictPlayFeatureTests(TestCase):
