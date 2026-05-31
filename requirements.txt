@@ -4,6 +4,8 @@ joblib==1.5.1
 requests==2.32.3
 Django==6.0.5
 djangorestframework==3.17.1
+gunicorn==23.0.0
+whitenoise==6.9.0
 numpy==2.4.4
 scipy==1.17.1
 matplotlib==3.10.8

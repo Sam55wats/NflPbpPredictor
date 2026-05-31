@@ -81,7 +81,7 @@ OFFENSE_PLAY_TYPES = {"pass", "run"}
 SPECIAL_TEAMS_PLAY_TYPES = {"punt", "field_goal"}
 
 def model_file(*parts):
-    return os.path.join(settings.BASE_DIR, MODEL_DIR, *parts)
+    return settings.BASE_DIR / MODEL_DIR / os.path.join(*parts)
 
 def build_play_features(play):
     posteam_type = "home" if play.posteam_id == play.game.home_team_id else "away"
