@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>NFL Feature Experiment Report</title>
+  <style>
+    body { margin: 0; font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; color: #172026; background: #f7f9fb; }
+    header { padding: 48px 28px; background: #173b35; color: white; }
+    main { width: min(1120px, calc(100% - 32px)); margin: 0 auto; padding: 28px 0 56px; }
+    section { margin: 28px 0; background: white; border: 1px solid #d8e0e6; border-radius: 8px; padding: 22px; box-shadow: 0 12px 30px rgba(23,32,38,.08); }
+    h1 { margin: 0; font-size: clamp(2rem, 5vw, 4rem); line-height: 1; }
+    h2 { margin: 0 0 10px; }
+    p { color: #5a6872; }
+    table { width: 100%; border-collapse: collapse; font-size: .92rem; }
+    th, td { border-bottom: 1px solid #d8e0e6; padding: 10px 8px; text-align: left; }
+    th { font-size: .76rem; text-transform: uppercase; letter-spacing: .06em; color: #40515d; }
+    img { width: 100%; max-width: 1050px; border: 1px solid #d8e0e6; border-radius: 8px; background: white; }
+    code { background: #eef2f5; padding: 2px 5px; border-radius: 4px; }
+    .callout { border-left: 5px solid #13795b; background: #eefaf4; padding: 14px 16px; color: #234036; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>NFL Feature Experiment Report</h1>
+    <p>Train seasons: 2020-2024. Holdout season: 2025. Train rows: 191,801. Test rows: 37,685.</p>
+  </header>
+  <main>
+    <section>
+      <h2>Headline</h2>
+      <div class="callout">The experiment compares the current random forest feature set, a no-yardage-bucket ablation, a tendency-feature variant, a staged random forest, and simple baselines on a true 2024 holdout.</div>
+    </section>
+    <section>
+      <h2>Metric Summary</h2>
+      <table><thead><tr><th>Experiment</th><th>Accuracy</th><th>Macro F1</th><th>Weighted F1</th><th>Pass F1</th><th>Run F1</th><th>Punt F1</th><th>FG F1</th></tr></thead><tbody><tr><td>Staged RF current features</td><td>0.7317</td><td>0.8192</td><td>0.7320</td><td>0.7405</td><td>0.6770</td><td>0.9533</td><td>0.9061</td></tr>
+<tr><td>Staged RF no buckets</td><td>0.7329</td><td>0.8185</td><td>0.7330</td><td>0.7437</td><td>0.6758</td><td>0.9527</td><td>0.9017</td></tr>
+<tr><td>RF current feature set</td><td>0.7335</td><td>0.8164</td><td>0.7335</td><td>0.7442</td><td>0.6772</td><td>0.9496</td><td>0.8947</td></tr>
+<tr><td>RF without yardage buckets</td><td>0.7327</td><td>0.8164</td><td>0.7324</td><td>0.7466</td><td>0.6709</td><td>0.9512</td><td>0.8971</td></tr>
+<tr><td>Staged RF rolling tendencies no buckets</td><td>0.7278</td><td>0.8109</td><td>0.7277</td><td>0.7399</td><td>0.6693</td><td>0.9455</td><td>0.8889</td></tr>
+<tr><td>Simple logistic baseline</td><td>0.7192</td><td>0.7902</td><td>0.7195</td><td>0.7302</td><td>0.6661</td><td>0.9578</td><td>0.8068</td></tr>
+<tr><td>RF rolling tendencies no buckets</td><td>0.7224</td><td>0.7851</td><td>0.7217</td><td>0.7345</td><td>0.6709</td><td>0.9126</td><td>0.8223</td></tr>
+<tr><td>RF broad tendency features</td><td>0.7195</td><td>0.7811</td><td>0.7190</td><td>0.7256</td><td>0.6772</td><td>0.9051</td><td>0.8166</td></tr>
+<tr><td>Dummy most-frequent baseline</td><td>0.5212</td><td>0.1713</td><td>0.3571</td><td>0.6852</td><td>0.0000</td><td>0.0000</td><td>0.0000</td></tr></tbody></table>
+    </section>
+    <section>
+      <h2>Accuracy and F1</h2>
+      <img src="experiment_accuracy_f1.png" alt="Accuracy and F1 bar chart">
+    </section>
+    <section>
+      <h2>Removing Yardage Buckets</h2>
+      <p>This isolates what happens when <code>short_yardage</code>, <code>medium_yardage</code>, and <code>long_yardage</code> are removed while raw <code>ydstogo</code> remains.</p>
+      <img src="yardage_bucket_ablation_delta.png" alt="Yardage bucket ablation delta chart">
+    </section>
+    <section>
+      <h2>Confusion Matrices</h2>
+      <img src="confusion_matrices.png" alt="Confusion matrix comparison">
+    </section>
+    <section>
+      <h2>Permutation Importance</h2>
+      <p>Permutation importance measures how much macro F1 drops when one feature is shuffled in the holdout set.</p>
+      <table><thead><tr><th>Feature</th><th>Macro F1 Drop</th></tr></thead><tbody><tr><td>down</td><td>0.3885</td></tr>
+<tr><td>shotgun</td><td>0.2491</td></tr>
+<tr><td>yardline_100</td><td>0.1917</td></tr>
+<tr><td>ydstogo</td><td>0.0064</td></tr>
+<tr><td>score_differential</td><td>0.0037</td></tr>
+<tr><td>short_yardage</td><td>0.0026</td></tr>
+<tr><td>half_seconds_remaining</td><td>0.0023</td></tr>
+<tr><td>long_yardage</td><td>0.0017</td></tr>
+<tr><td>red_zone</td><td>0.0013</td></tr>
+<tr><td>quarter_seconds_remaining</td><td>0.0010</td></tr>
+<tr><td>no_huddle</td><td>0.0009</td></tr>
+<tr><td>is_losing</td><td>0.0008</td></tr></tbody></table>
+      <img src="permutation_importance.png" alt="Permutation importance chart">
+    </section>
+    <section>
+      <h2>Stored Inference Feature Verification</h2>
+      <p>The experiment recomputed these features from raw columns. This table shows what is currently stored in the SQLite DB before code fixes/backfill.</p>
+      <table><thead><tr><th>Feature</th><th>Mismatches</th><th>Mismatch Rate</th><th>Stored Unique Sample</th></tr></thead><tbody><tr><td>red_zone</td><td>0</td><td>0.0%</td><td>0, 1</td></tr>
+<tr><td>clock_pressure</td><td>0</td><td>0.0%</td><td>0, 1</td></tr>
+<tr><td>short_yardage</td><td>0</td><td>0.0%</td><td>0, 1</td></tr>
+<tr><td>medium_yardage</td><td>0</td><td>0.0%</td><td>0, 1</td></tr>
+<tr><td>long_yardage</td><td>0</td><td>0.0%</td><td>0, 1</td></tr>
+<tr><td>is_losing</td><td>0</td><td>0.0%</td><td>0, 1</td></tr>
+<tr><td>late_game</td><td>0</td><td>0.0%</td><td>0, 1</td></tr>
+<tr><td>quarter_half</td><td>0</td><td>0.0%</td><td>0, 1</td></tr>
+<tr><td>season</td><td>0</td><td>0.0%</td><td>2020, 2021, 2022, 2023, 2024, 2025</td></tr>
+<tr><td>posteam_type</td><td>0</td><td>0.0%</td><td>away, home</td></tr>
+<tr><td>defteam</td><td>0</td><td>0.0%</td><td>ARI, ATL, BAL, BUF, CAR, CHI</td></tr></tbody></table>
+    </section>
+  </main>
+</body>
+</html>
