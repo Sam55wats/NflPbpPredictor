@@ -1,0 +1,14 @@
+{
+  "train_seasons": "2020-2024",
+  "holdout_season": 2025,
+  "train_rows": 191801,
+  "test_rows": 37685,
+  "metrics_csv": "/Users/samuelkim/NflPbpPredictor/outputs/feature_experiments_2025_holdout/staged_component_metrics.csv",
+  "confusion_csvs": [
+    "/Users/samuelkim/NflPbpPredictor/outputs/feature_experiments_2025_holdout/staged_component_confusion_stage_offense_vs_special.csv",
+    "/Users/samuelkim/NflPbpPredictor/outputs/feature_experiments_2025_holdout/staged_component_confusion_offense_submodel_pass_vs_run.csv",
+    "/Users/samuelkim/NflPbpPredictor/outputs/feature_experiments_2025_holdout/staged_component_confusion_special_submodel_field_goal_vs_punt.csv",
+    "/Users/samuelkim/NflPbpPredictor/outputs/feature_experiments_2025_holdout/staged_component_confusion_full_staged_prediction.csv"
+  ],
+  "seconds": 44.75682625011541
+}
