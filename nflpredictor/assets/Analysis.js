@@ -205,7 +205,15 @@ export default function Analysis(){
                                     <div className="prediction-grid">
                                         <span className="status-pill">
                                             <span className="status-dot ready"></span>
-                                            Generating model pick...
+                                            <span className="loading-copy">
+                                                Generating model pick
+                                                <span className="loading-dots" aria-hidden="true">
+                                                    <span></span>
+                                                    <span></span>
+                                                    <span></span>
+                                                </span>
+                                                <span className="visually-hidden">...</span>
+                                            </span>
                                         </span>
                                         <ul className="headline-list">
                                             <li>Loading the team-specific model for this snap.</li>
