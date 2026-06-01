@@ -6,6 +6,8 @@ from django.shortcuts import render
 from django.template import loader
 from django.http import HttpResponse
 import os
+from functools import lru_cache
+
 import joblib
 import pandas as pd
 from django.conf import settings
@@ -87,6 +89,10 @@ SPECIAL_TEAMS_PLAY_TYPES = {"punt", "field_goal"}
 def model_file(*parts):
     return settings.BASE_DIR / MODEL_DIR / os.path.join(*parts)
 
+@lru_cache(maxsize=24)
+def load_model_artifact(path):
+    return joblib.load(path)
+
 def build_play_features(play):
     posteam_type = "home" if play.posteam_id == play.game.home_team_id else "away"
     defteam = play.game.away_team.team_abbr if posteam_type == "home" else play.game.home_team.team_abbr
@@ -153,16 +159,16 @@ def predict_label_and_confidence(model, df):
 
 def predict_with_staged_model(team_abbr, play_data):
     paths = staged_model_paths(team_abbr)
-    feature_names = joblib.load(paths["features"])
+    feature_names = load_model_artifact(paths["features"])
     df = prepare_prediction_frame(play_data, feature_names)
 
-    stage_model = joblib.load(paths["stage"])
+    stage_model = load_model_artifact(paths["stage"])
     stage_prediction, stage_confidence = predict_label_and_confidence(stage_model, df)
 
     if stage_prediction == "offense":
-        final_model = joblib.load(paths["offense"])
+        final_model = load_model_artifact(paths["offense"])
     else:
-        final_model = joblib.load(paths["special"])
+        final_model = load_model_artifact(paths["special"])
 
     prediction, prediction_confidence = predict_label_and_confidence(final_model, df)
     return {
@@ -174,8 +180,8 @@ def predict_with_staged_model(team_abbr, play_data):
     }
 
 def predict_with_flat_model(team_abbr, play_data):
-    model = joblib.load(model_file(f"{team_abbr}_rf_model.joblib"))
-    feature_names = joblib.load(model_file(f"{team_abbr}_feature_names.joblib"))
+    model = load_model_artifact(model_file(f"{team_abbr}_rf_model.joblib"))
+    feature_names = load_model_artifact(model_file(f"{team_abbr}_feature_names.joblib"))
     df = prepare_prediction_frame(play_data, feature_names)
     prediction, prediction_confidence = predict_label_and_confidence(model, df)
     return {

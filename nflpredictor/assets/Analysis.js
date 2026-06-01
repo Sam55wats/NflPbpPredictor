@@ -31,6 +31,7 @@ export default function Analysis(){
     const [plays, setPlays] = useState([]);
     const [selectedPlay, setSelectedPlay] = useState(undefined);
     const [predictionResult, setPredictionResult] = useState(undefined);
+    const [isPredicting, setIsPredicting] = useState(false);
 
 
     const [seasonYear, setSeasonYear] = useState(undefined);
@@ -94,6 +95,7 @@ export default function Analysis(){
         const selectedId = selected.length ? selected[0].id : undefined;
         setSelectedPlay(selectedId);
         setPredictionResult(undefined);
+        setIsPredicting(Boolean(selectedId));
 
         if (!selectedId) {
             return;
@@ -103,7 +105,8 @@ export default function Analysis(){
             .then((res) => res.json())
             .then((data) => {
                 setPredictionResult(data)
-            });
+            })
+            .finally(() => setIsPredicting(false));
     };
 
     return (
@@ -198,7 +201,18 @@ export default function Analysis(){
                         <section className={`card-panel prediction-outcome ${resultClass}`}>
                             <div className="card-body">
                                 <h2 className="section-title">Model Pick</h2>
-                                {hasResult ? (
+                                {isPredicting ? (
+                                    <div className="prediction-grid">
+                                        <span className="status-pill">
+                                            <span className="status-dot ready"></span>
+                                            Generating model pick...
+                                        </span>
+                                        <ul className="headline-list">
+                                            <li>Loading the team-specific model for this snap.</li>
+                                            <li>The prediction and actual result will appear here.</li>
+                                        </ul>
+                                    </div>
+                                ) : hasResult ? (
                                     <div className="prediction-grid">
                                         <div className="result-card">
                                             <div className="result-label">Prediction</div>
