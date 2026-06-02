@@ -6,3 +6,6 @@ nfl_pbp_csvs/
 cleaned_pbp_forest_part_*/
 combined_pbp_*_forest.csv
 nflpredictor/saved_team_models/backup_before_*/
+nflpredictor/static/index-bundle.js
+nflpredictor/static/index-bundle.js.LICENSE.txt
+outputs/manual-*/

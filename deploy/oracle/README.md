@@ -70,6 +70,11 @@ SITE_ADDRESS=your-domain.com
 WEB_CONCURRENCY=2
 ```
 
+`WEB_CONCURRENCY=2` is reasonable for the recommended Oracle VM because it has
+more memory than the Northflank free container. If you deploy to a smaller
+instance, start with `WEB_CONCURRENCY=1` and increase only after checking memory
+usage during prediction requests.
+
 If you are testing with only the VM public IP, use this instead:
 
 ```bash

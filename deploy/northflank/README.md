@@ -25,8 +25,19 @@ Set these on the Northflank service:
 ```bash
 DEBUG=False
 SECRET_KEY=<generate-a-new-secret>
-WEB_CONCURRENCY=2
+WEB_CONCURRENCY=1
 ```
+
+`WEB_CONCURRENCY` controls the number of Gunicorn worker processes. For the
+free/small Northflank container, keep it at `1` because each worker can load its
+own copy of the large scikit-learn model artifacts. Running `2` workers can
+improve concurrent request handling only if the container has enough memory and
+CPU to support two Django/model processes.
+
+If this becomes a public site with steady traffic, upgrade the Northflank
+resources first, then test `WEB_CONCURRENCY=2` or higher under load. Do not
+raise worker count on the free container just because more people may visit; it
+can make cold model loads slower or less reliable.
 
 Optional:
 
