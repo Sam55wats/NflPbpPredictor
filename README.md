@@ -143,6 +143,37 @@ npm run build
 
 ---
 
+## Deployment And URL
+
+The deployed demo is configured for Northflank from the branch:
+
+```text
+nflpredictor/render-free-deploy
+```
+
+At the moment, `main` and `nflpredictor/render-free-deploy` are intentionally
+kept identical so the resume/demo code, deployment branch, and GitHub
+contribution history stay aligned.
+
+Northflank provides a generated `*.code.run` URL. That generated URL cannot be
+renamed to a plain display name like `NFL PBP Predictor`, because public URLs
+cannot contain spaces and Northflank-generated URLs follow Northflank's service
+and project naming format.
+
+If you want a cleaner public URL, use a custom domain or subdomain, for example:
+
+```text
+nfl-pbp-predictor.com
+nfl-pbp-predictor.your-domain.com
+playcall.your-domain.com
+```
+
+After adding a custom domain in Northflank, point the DNS record to the service
+port and add the custom hostname to `ALLOWED_HOSTS` if needed. See
+`deploy/northflank/README.md` for the Northflank deployment settings.
+
+---
+
 ## Testing
 
 Run backend tests:
