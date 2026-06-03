@@ -1,83 +1,43 @@
-# NFL Play Predictor
+# NFL PBP Predictor
 
-A full-stack web application that predicts NFL play types before the snap:
+NFL PBP Predictor is a Django and React web app that predicts pre-snap NFL play type for historical plays:
 
-- pass
-- run
-- punt
-- field goal
+- `pass`
+- `run`
+- `punt`
+- `field_goal`
 
-Built with Django, React, and scikit-learn, the app uses team-specific staged Random Forest models trained on NFL play-by-play data from 2020 through 2025. Users can select a season, game, team, and historical play, then compare the model prediction against what actually happened.
+The app uses team-specific scikit-learn Random Forest artifacts trained from nflverse/nflfastR play-by-play data. A user selects a season, game, team, and historical play, then the app compares the model prediction with the actual result.
 
----
+## What The App Does
 
-## Features
+- Serves a Django REST API for seasons, games, teams, plays, and predictions.
+- Uses a React/Webpack frontend for the selection and analysis flow.
+- Loads checked-in per-team model artifacts from `nflpredictor/saved_team_models/`.
+- Uses staged models when available:
+  1. Classify the play as `offense` or `special`.
+  2. Route to an offense model for `pass` vs `run`, or a special teams model for `punt` vs `field_goal`.
+- Falls back to the older flat four-class Random Forest model if staged artifacts are missing.
 
-- Play type prediction for historical NFL snaps.
-- Team-specific models trained separately for each possession team.
-- Staged modeling approach: first separates offense from special teams, then predicts the final play type.
-- Pre-snap feature engineering using down, distance, yard line, score differential, time remaining, red zone, clock pressure, formation, and timeout context.
-- Interactive React UI for selecting seasons, games, teams, and plays.
-- Django REST API serving season, game, team, play, and prediction data.
-- 2020-2025 play data available in the local app database.
-
----
+Website/demo inference uses staged model artifacts trained on the available 2020-2025 data. Holdout experiment results are separate from the website models and are used to estimate generalization.
 
 ## Tech Stack
 
-**Frontend:** React, CSS, Webpack  
 **Backend:** Django, Django REST Framework  
-**Machine Learning:** Python, scikit-learn, pandas, joblib  
-**Data:** nflverse/nflfastR play-by-play data from 2020-2025  
+**Frontend:** React, Webpack, CSS  
+**Machine learning:** scikit-learn, pandas, joblib  
+**Data source:** nflverse/nflfastR play-by-play CSVs  
+**Database:** SQLite for the local/demo Django app
 
----
-
-## Model Approach
-
-The app uses team-specific staged Random Forest models.
-
-The staged model works in two steps:
-
-1. Decide whether the play is an offensive play or a special teams play.
-2. Use the matching second-stage model:
-   - offense model predicts `pass` or `run`
-   - special teams model predicts `punt` or `field_goal`
-
-This keeps the model from treating all four play types as one flat decision when the football decision is naturally split into two groups.
-
-The web app shows the final prediction, model confidence, actual result, and whether the prediction matched.
-
----
-
-## Model Performance
-
-Recent holdout experiments compared several approaches:
-
-- current Random Forest feature set
-- Random Forest without redundant yardage bucket features
-- Random Forest with broad tendency features
-- Random Forest with rolling tendency features
-- staged Random Forest models
-- simple logistic baseline
-- dummy baseline
-
-The staged Random Forest with the current feature set performed best in the experiment, with about:
-
-- **72.8% accuracy**
-- **0.823 macro F1**
-
-Removing redundant yardage bucket features was mostly neutral, while tendency features did not improve accuracy in the tested setup.
-
----
-
-## Project Structure
+## Repository Layout
 
 ```text
 NflPbpPredictor/
+├── README.md
+├── requirements.txt
 ├── download_pbp.py
 ├── clean_combine_pbp.py
 ├── model_training.py
-├── requirements.txt
 ├── nflpredictor/
 │   ├── manage.py
 │   ├── db.sqlite3
@@ -87,20 +47,18 @@ NflPbpPredictor/
 │   ├── core/
 │   ├── saved_team_models/
 │   └── static/
-└── outputs/
+├── outputs/
+│   ├── feature_experiments/
+│   ├── feature_experiments_2025_holdout/
+│   └── model_benchmark/
+└── deploy/
 ```
 
----
+The Django project root is the nested `nflpredictor/` directory. Django settings use `nflpredictor/db.sqlite3`, not a database file at the repository root.
 
 ## Setup
 
-Install Python dependencies from the repo root:
-
-```bash
-pip install -r requirements.txt
-```
-
-If your system Python is externally managed, create a virtual environment first:
+Install Python dependencies from the repository root:
 
 ```bash
 python3 -m venv .venv
@@ -108,71 +66,74 @@ source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
-Install frontend dependencies from the Django project directory:
+Install frontend dependencies from the nested Django project:
 
 ```bash
 cd nflpredictor
 npm install
 ```
 
----
-
-## Running The App
+## Running Locally
 
 Run Django from the nested project directory:
 
 ```bash
 cd nflpredictor
-python manage.py migrate
-python manage.py runserver
+python3 manage.py migrate
+python3 manage.py runserver
 ```
 
-In another terminal, build or watch the frontend bundle:
+Build or watch the frontend bundle from the same nested directory:
 
 ```bash
 cd nflpredictor
 npm run dev
 ```
 
-For a one-time production build:
+For a one-time production bundle:
 
 ```bash
 cd nflpredictor
 npm run build
 ```
 
----
+## API Routes
 
-## Deployment And URL
+- `GET /api/season/` lists seasons.
+- `GET /api/game/?season_id=<id>` lists games for a season.
+- `GET /api/teams/?game_id=<id>` returns the home and away teams for a game.
+- `GET /api/plays/?game_id=<id>&team_id=<id>` lists plays where the selected team has possession.
+- `GET /api/predict_play/?play_id=<id>` returns the model prediction, confidence, actual play type, and match result.
 
-The deployed demo is configured for Northflank from the branch:
+## Data And Models
 
-```text
-nflpredictor/render-free-deploy
+The normal offline workflow is:
+
+1. Download nflverse play-by-play CSVs with `download_pbp.py`.
+2. Clean and combine valid play types with `clean_combine_pbp.py`.
+3. Train per-team model artifacts.
+4. Refresh the Django database:
+
+```bash
+cd nflpredictor
+python3 manage.py seed --mode refresh
 ```
 
-At the moment, `main` and `nflpredictor/render-free-deploy` are intentionally
-kept identical so the resume/demo code, deployment branch, and GitHub
-contribution history stay aligned.
+The seed command clears and rebuilds local app data. Generated raw and combined CSVs are intentionally ignored by Git because they are large local artifacts.
 
-Northflank provides a generated `*.code.run` URL. That generated URL cannot be
-renamed to a plain display name like `NFL PBP Predictor`, because public URLs
-cannot contain spaces and Northflank-generated URLs follow Northflank's service
-and project naming format.
+## Model Evaluation
 
-If you want a cleaner public URL, use a custom domain or subdomain, for example:
+Recent 2025 holdout experiments trained on 2020-2024 data and tested on 2025 data. The strongest raw accuracy came from the flat Random Forest current feature set:
 
-```text
-nfl-pbp-predictor.com
-nfl-pbp-predictor.your-domain.com
-playcall.your-domain.com
-```
+| Experiment | Accuracy | Macro F1 |
+| --- | ---: | ---: |
+| Flat RF current feature set | 0.7335 | 0.8164 |
+| Staged RF current features | 0.7317 | 0.8192 |
+| Staged RF no buckets | 0.7329 | 0.8185 |
 
-After adding a custom domain in Northflank, point the DNS record to the service
-port and add the custom hostname to `ALLOWED_HOSTS` if needed. See
-`deploy/northflank/README.md` for the Northflank deployment settings.
+Accuracy is the share of correct predictions. Macro F1 averages class-level F1 scores equally, which matters because `pass` and `run` are much more common than `punt` and `field_goal`.
 
----
+The staged model's hardest step is `pass` vs `run`. Its 2025 component evaluation showed strong offense/special routing and strong punt/field-goal separation, while the offense submodel was the main source of misses.
 
 ## Testing
 
@@ -180,67 +141,43 @@ Run backend tests:
 
 ```bash
 cd nflpredictor
-python manage.py test
+python3 manage.py test
 ```
 
-Run Django system checks:
+Run Django checks:
 
 ```bash
 cd nflpredictor
-python manage.py check
+python3 manage.py check
 ```
 
-Check frontend dependencies:
+Check frontend production dependencies:
 
 ```bash
 cd nflpredictor
 npm audit --omit=dev
 ```
 
----
+## Deployment
 
-## Data Refresh
+The app includes deployment files for hosted demos:
 
-The current Django database includes seasons 2020 through 2025.
+- `Dockerfile`
+- `build.sh`
+- `requirements-render.txt`
+- `deploy/northflank/`
+- `deploy/oracle/`
 
-The data flow is:
-
-1. Download nflverse play-by-play CSVs.
-2. Clean the data to keep valid play types:
-   - pass
-   - run
-   - punt
-   - field_goal
-3. Combine seasons into `combined_pbp_2020_2025_forest.csv`.
-4. Train team-specific model artifacts.
-5. Refresh the Django database with:
-
-```bash
-cd nflpredictor
-python manage.py seed --mode refresh
-```
-
-The seed command clears and rebuilds the app data, so only run it when you intend to refresh the local database.
-
----
-
-## Model Artifacts
-
-Saved models live in:
+The active deployment branch for the hosted demo is:
 
 ```text
-nflpredictor/saved_team_models/
+nflpredictor/render-free-deploy
 ```
 
-Each team has flat model artifacts and staged model artifacts. The app uses staged models when all staged files exist for the selected team.
+See `deploy/northflank/README.md` for Northflank settings.
 
----
+## Notes
 
-## Future Improvements
-
-- Add real-time or upcoming-game prediction workflows.
-- Improve calibration of confidence percentages.
-- Compare staged Random Forests against additional model families.
-- Add more robust frontend tests.
-- Improve bundle size through code splitting.
-- Add richer model evaluation pages directly inside the web app.
+- The checked-in `nflpredictor/static/index-bundle.jsx` is the frontend bundle loaded by Django templates.
+- `nflpredictor/saved_team_models/` contains required inference artifacts and should stay synchronized with feature names.
+- Local interview guide pages and other private notes under `docs/` are ignored so they can exist locally without appearing on GitHub.
