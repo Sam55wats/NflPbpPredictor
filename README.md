@@ -54,7 +54,7 @@ NflPbpPredictor/
 └── deploy/
 ```
 
-The Django project root is the nested `nflpredictor/` directory. Django settings use `nflpredictor/db.sqlite3`, not a database file at the repository root.
+The Django project root is the nested `nflpredictor/` directory. Django settings use `nflpredictor/db.sqlite3` at the repository root.
 
 ## Setup
 
